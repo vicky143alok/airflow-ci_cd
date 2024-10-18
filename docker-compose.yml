@@ -12,7 +12,8 @@ services:
     image: redis:latest
 
   webserver:
-    image: airflow-custom:latest
+    image: thelastmonk/airflow-dag:latest
+    command: ["airflow", "webserver"]
     container_name: airflow_webserver
     depends_on:
       - postgres
@@ -26,7 +27,7 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
 
   scheduler:
-    image: airflow-custom:latest
+    image: thelastmonk/airflow-dag:latest
     container_name: airflow_scheduler
     depends_on:
       - webserver
