@@ -28,7 +28,7 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t DOCKER_USERNAME/airflow-dag:${{ github.sha }} .
+          docker build -t thelastmonk/airflow-dag:${{ github.sha }} .
           docker tag airflow-dag:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/airflow-dag:latest
 
       # Push image to Docker Hub
