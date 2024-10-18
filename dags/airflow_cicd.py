@@ -25,7 +25,7 @@ dag = DAG(
 )
 
 # Function to generate table (example DataFrame)
-def generate_table():
+def generate_table(**kwargs):
     data = {
         'id': [1, 2, 3],
         'name': ['John', 'Jane', 'Doe'],
@@ -36,26 +36,33 @@ def generate_table():
     df.to_csv(file_path, index=False)
     return file_path
 
+# Push file path to XCom
+    kwargs['ti'].xcom_push(key='file_path', value=file_path)
+
 # Function to upload file to S3
 def upload_to_s3(file_path):
-    s3 = boto3.client(
+  file_path = kwargs['ti'].xcom_pull(key='file_path', task_ids='generate_table')
+  
+  s3 = boto3.client(
         's3',
         aws_access_key_id=AWS_ACCESS_KEY,
         aws_secret_access_key=AWS_SECRET_KEY
     )
-    bucket_name = 'my-s3-bucket'
-    s3.upload_file(file_path, bucket_name, 'table.csv')
+  bucket_name = 'my-s3-bucket'
+  s3.upload_file(file_path, bucket_name, 'table.csv')
 
 # Tasks for DAG
 generate_task = PythonOperator(
     task_id='generate_table',
     python_callable=generate_table,
+    provide_context=True,  # Required for passing XCom data
     dag=dag,
 )
 
 upload_task = PythonOperator(
     task_id='upload_to_s3',
     python_callable=lambda: upload_to_s3(generate_task.output),
+    provide_context=True,  # Required for passing XCom data
     dag=dag,
 )
 
